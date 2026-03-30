@@ -1,9 +1,22 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
-from app.db.postgres import init_db
+from app.db.postgres import init_db, SessionLocal, AccessLog
 from app.rag.indexer import init_qdrant
+import logging
+import time
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    handlers=[
+        logging.FileHandler("access.log"),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger("access")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -17,6 +30,48 @@ app = FastAPI(
     description="API for PDF RAG Chatbot System",
     lifespan=lifespan
 )
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    start_time = time.time()
+    
+    # Get IP address
+    client_ip = request.client.host if request.client else "Unknown"
+    
+    # Check for X-Forwarded-For if behind proxy
+    forwarded_for = request.headers.get("X-Forwarded-For")
+    if forwarded_for:
+        client_ip = forwarded_for.split(",")[0].strip()
+        
+    method = request.method
+    url = request.url.path
+    
+    response = await call_next(request)
+    
+    process_time = time.time() - start_time
+    status_code = response.status_code
+    
+    logger.info(f"IP: {client_ip} | Method: {method} | URL: {url} | Status: {status_code} | Time: {process_time:.4f}s")
+    
+    if SessionLocal:
+        try:
+            db = SessionLocal()
+            log_entry = AccessLog(
+                ip_address=client_ip,
+                method=method,
+                url=url,
+                status_code=status_code,
+                process_time=process_time
+            )
+            db.add(log_entry)
+            db.commit()
+        except Exception as e:
+            logger.error(f"Failed to save log to database: {e}")
+        finally:
+            if 'db' in locals():
+                db.close()
+    
+    return response
 
 # Set up CORS
 if settings.BACKEND_CORS_ORIGINS:

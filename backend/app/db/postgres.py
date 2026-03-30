@@ -1,4 +1,4 @@
-from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, create_engine
+from sqlalchemy import Column, String, Integer, DateTime, Text, ForeignKey, create_engine, Float
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from datetime import datetime
 from app.core.config import settings
@@ -25,6 +25,17 @@ class DocumentChunk(Base):
     chunk_index = Column(Integer, nullable=False)
     
     document = relationship("Document", back_populates="chunks")
+
+class AccessLog(Base):
+    __tablename__ = 'access_logs'
+    
+    id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
+    ip_address = Column(String, nullable=True)
+    method = Column(String, nullable=True)
+    url = Column(String, nullable=True)
+    status_code = Column(Integer, nullable=True)
+    process_time = Column(Float, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
 
 # Try to use DATABASE_URL from config or construct it
 if settings.DATABASE_URL:
