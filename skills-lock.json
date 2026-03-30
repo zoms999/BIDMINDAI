@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "skills": {
+    "sequential-thinking": {
+      "source": "smithery.ai",
+      "sourceType": "well-known",
+      "computedHash": "387154fba28528c7e227caae59a5c17bd8a264c028f2e77626adc5e53b2dc99d"
+    }
+  }
+}

@@ -1,0 +1,1 @@
+# BidMindAI Application Package
