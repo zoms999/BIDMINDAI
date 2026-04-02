@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db.postgres import init_db, SessionLocal, AccessLog
 from app.rag.indexer import init_qdrant
+from app.middleware.security import SecurityMiddleware
 import logging
 import time
 
@@ -29,6 +30,13 @@ app = FastAPI(
     version="1.0.0",
     description="API for PDF RAG Chatbot System",
     lifespan=lifespan
+)
+
+# Add Security Middleware (MUST be added before other middlewares)
+app.add_middleware(
+    SecurityMiddleware,
+    enable_geo_blocking=True,  # 국내 IP만 허용
+    enable_rate_limit=True      # Rate limiting 활성화
 )
 
 @app.middleware("http")
