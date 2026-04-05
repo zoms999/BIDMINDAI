@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   qdrant:
-    image: qdrant/qdrant:v1.12.0
+    image: qdrant/qdrant:v1.17.0
     ports:
       - "${QDRANT_PORT:-6333}:6333"
     volumes:
