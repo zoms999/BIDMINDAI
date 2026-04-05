@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "secret"
     
     # CORS
-    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://34.50.4.9:3000"
+    BACKEND_CORS_ORIGINS: str = "http://localhost:3000,http://34.50.23.245:3000"
 
     @property
     def cors_origins_list(self) -> List[str]:
